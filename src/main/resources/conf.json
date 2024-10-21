@@ -1,0 +1,16 @@
+{
+  "tabs": [
+    {
+      "clazz": "org.xiaoxve.fun.encrypt.EncryptTab",
+      "name": "加密",
+      "icon": "/icon/encrypt.png",
+      "enabled": true
+    },
+    {
+      "clazz": "org.xiaoxve.fun.json.JsonTab",
+      "name": "JSON",
+      "icon": "/icon/json.png",
+      "enabled": true
+    }
+  ]
+}
