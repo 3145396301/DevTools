@@ -6,7 +6,7 @@
 
     <groupId>org.xiaoxve</groupId>
     <artifactId>javaDevTool</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
@@ -72,6 +72,40 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.17.2</version>
         </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <version>1.70</version>
+        </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.github.fvarrui</groupId>
+                <artifactId>javapackager</artifactId>
+                <version>1.7.5</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>org.xiaoxve.Main</mainClass>
+                            <bundleJre>true</bundleJre>
+                            <generateInstaller>true</generateInstaller>
+                            <administratorRequired>true</administratorRequired>
+                            <platform>windows</platform>
+                            <winConfig>
+                                <disableDirPage>false</disableDirPage>
+                                <headerType>console</headerType>
+                            </winConfig>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
