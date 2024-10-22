@@ -8,11 +8,23 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.DirectoryChooser;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.xiaoxve.DevToolsApplication;
 import org.xiaoxve.itfc.Fun;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.cert.X509Certificate;
+import java.util.Date;
 
 public class SSLFun implements Fun {
     private GridPane node; // 使用GridPane进行布局
@@ -113,18 +125,36 @@ public class SSLFun implements Fun {
         }
 
         try {
-            String cmd = "openssl req -newkey rsa:2048 -nodes -keyout " + path + "/server.key -x509 -days " + days + " -out " + path + "/server.crt -subj \"/CN=" + cn + "\"";
-            if (isEncrypted && !password.isEmpty()) {
-                cmd += " -passout pass:" + password;
+            int validity = Integer.parseInt(days);
+            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+            keyPairGenerator.initialize(2048);
+            KeyPair keyPair = keyPairGenerator.generateKeyPair();
+
+            X500Name issuerName = new X500Name("CN=" + cn);
+            X500Name subjectName = issuerName;
+            BigInteger serial = BigInteger.valueOf(System.currentTimeMillis());
+            Date notBefore = new Date();
+            Date notAfter = new Date(System.currentTimeMillis() + validity * 24 * 60 * 60 * 1000);
+
+            X509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
+                    issuerName, serial, notBefore, notAfter, subjectName, keyPair.getPublic());
+
+            ContentSigner contentSigner = new JcaContentSignerBuilder("SHA256WithRSAEncryption").build(keyPair.getPrivate());
+            X509Certificate certificate = new JcaX509CertificateConverter().getCertificate(certBuilder.build(contentSigner));
+
+            // 保存证书和私钥到文件
+            try (FileOutputStream keyOut = new FileOutputStream(path + "/server.key");
+                 FileOutputStream certOut = new FileOutputStream(path + "/server.crt")) {
+                keyOut.write(keyPair.getPrivate().getEncoded());
+                certOut.write(certificate.getEncoded());
             }
 
-            Process process = Runtime.getRuntime().exec(cmd.split(" "));
-            process.waitFor();
             showAlert("成功", "证书已成功生成!");
-        } catch (IOException | InterruptedException e) {
+        } catch (Exception e) {
             showAlert("失败", "生成证书时发生错误: " + e.getMessage());
         }
     }
+
 
     private void convertCertFormat() {
         showAlert("提示", "证书格式转换功能尚未实现！");
