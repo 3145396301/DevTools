@@ -1,9 +1,11 @@
 package org.xiaoxve.fun;
 
+import javafx.geometry.Pos;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -44,25 +46,37 @@ public abstract class BaseTab implements Tab {
         // 加载图标资源
         Image icon = new Image(getClass().getResourceAsStream(this.icon));
         imageView = new ImageView(icon); // 创建图标的 ImageView
+        imageView.setPreserveRatio(true);
+        imageView.setFitWidth(100); // 设置固定宽度（根据需求调整）
 
         // 创建 HBox 并设置属性
         node = new HBox();
+
+        // 创建左侧 VBox 来放置图标
+        VBox leftBox = new VBox();
+        leftBox.getChildren().add(imageView);
+        leftBox.setPrefWidth(100);
+        leftBox.setAlignment(javafx.geometry.Pos.CENTER);
+
+        // 创建右侧 VBox 来放置名称
+        VBox rightBox = new VBox();
         Text text = new Text(this.name); // 创建文本显示标签页名称
         text.setFont(Font.font(15)); // 设置文本字体大小
+        rightBox.getChildren().add(text);
+        rightBox.setPrefWidth(100);
+        rightBox.setAlignment(Pos.CENTER_LEFT); // 左对齐
+
+        // 将左右两个 VBox 添加到 HBox
+        node.getChildren().addAll(leftBox, rightBox);
 
         // 设置 HBox 的对齐方式为居中
         node.setAlignment(javafx.geometry.Pos.CENTER);
-
-        // 添加子节点到 HBox
-        node.getChildren().addAll(imageView, text);
+        node.setPrefHeight(50); // 设置 HBox 的高度（根据需求调整）
 
         // 使用 CSS 来控制布局
-        node.setStyle("-fx-alignment: center; -fx-padding: 5px;" +
+        node.setStyle("-fx-padding: 5px;" +
                 "-fx-border-color: #000000; -fx-border-radius: 5%;" +
-                "-fx-background-radius: 12%; -fx-background-color: #F0FADB;"); // 设置内边距和边框样式
-
-        imageView.setStyle("-fx-max-width: 50%; -fx-min-width: 50%;"); // 设置 ImageView 最大最小宽度为50%
-        text.setStyle("-fx-wrap-text: true; -fx-max-width: 50%; -fx-min-width: 50%;"); // 设置 Text 最大最小宽度为50%
+                "-fx-background-radius: 12%; -fx-background-color: #F0FADB;");
 
         adaptiveWidthHeight(); // 调整组件的宽高
 
@@ -78,6 +92,7 @@ public abstract class BaseTab implements Tab {
             }
         });
     }
+
 
     /**
      * 自适应宽高调整方法。
