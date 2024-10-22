@@ -6,6 +6,7 @@ import javafx.scene.layout.VBox;
 import lombok.Data;
 import org.xiaoxve.itfc.Tab;
 
+import java.awt.*;
 import java.util.List;
 
 /**
@@ -92,10 +93,11 @@ public class LeftTab {
             return; // 如果已经是当前标签页，则不进行切换
         }
         if (currentTab != null) {
-            currentTab.setBackground("#68686c"); // 还原之前标签页的背景颜色
+            currentTab.setBackground("#F0FADB"); // 还原之前标签页的背景颜色
         }
         currentTab = tab; // 设置当前标签页
-        tab.setBackground("#F0FADB"); // 设置新标签页的背景颜色
+        Color color = new Color(0xBAF0FF);
+        tab.setBackground("#BAF0FF"); // 设置新标签页的背景颜色
         currentTabIndex = tabs.indexOf(tab); // 获取当前标签页的索引
         rightFunction.switchFun(tab.getFun()); // 切换右侧功能区的功能
     }

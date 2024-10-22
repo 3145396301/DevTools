@@ -11,6 +11,54 @@
       "name": "JSON",
       "icon": "/icon/json.png",
       "enabled": true
+    },
+    {
+      "clazz": "org.xiaoxve.fun.base64.Base64Tab",
+      "name": "Base64",
+      "icon": "/icon/base64.png",
+      "enabled": false
+    },
+    {
+      "clazz": "org.xiaoxve.fun.net.PingTab",
+      "name": "Ping",
+      "icon": "/icon/ping.png",
+      "enabled": false
+    },
+    {
+      "clazz": "org.xiaoxve.fun.net.DnsTab",
+      "name": "DNS",
+      "icon": "/icon/dns.png",
+      "enabled": false
+    },
+    {
+      "clazz": "org.xiaoxve.fun.net.PortTab",
+      "name": "端口",
+      "icon": "/icon/port.png",
+      "enabled": false
+    },
+    {
+      "clazz": "org.xiaoxve.fun.img.QRCodeTab",
+      "name": "二维码",
+      "icon": "/icon/qrcode.png",
+      "enabled": false
+    },
+    {
+      "clazz": "org.xiaoxve.fun.color.PaletteTab",
+      "name": "调色板",
+      "icon": "/icon/palette.png",
+      "enabled": false
+    },
+    {
+      "clazz": "org.xiaoxve.fun.yaml.YamlTab",
+      "name": "YAML",
+      "icon": "/icon/yaml.png",
+      "enabled": false
+    },
+    {
+      "clazz": "org.xiaoxve.fun.ssl.SSLTab",
+      "name": "SSL",
+      "icon": "/icon/ssl.png",
+      "enabled": true
     }
   ]
 }

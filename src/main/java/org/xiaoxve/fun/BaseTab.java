@@ -59,7 +59,7 @@ public abstract class BaseTab implements Tab {
         // 使用 CSS 来控制布局
         node.setStyle("-fx-alignment: center; -fx-padding: 5px;" +
                 "-fx-border-color: #000000; -fx-border-radius: 5%;" +
-                "-fx-background-radius: 12%; -fx-background-color: #68686c;"); // 设置内边距和边框样式
+                "-fx-background-radius: 12%; -fx-background-color: #F0FADB;"); // 设置内边距和边框样式
 
         imageView.setStyle("-fx-max-width: 50%; -fx-min-width: 50%;"); // 设置 ImageView 最大最小宽度为50%
         text.setStyle("-fx-wrap-text: true; -fx-max-width: 50%; -fx-min-width: 50%;"); // 设置 Text 最大最小宽度为50%

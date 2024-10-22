@@ -43,6 +43,8 @@ public class RightFunction {
     public void adaptiveWidthHeight() {
         pane.setPrefWidth(root.getPrefWidth() * 0.8); // 设置面板宽度为根布局的 80%
         pane.setPrefHeight(root.getPrefHeight()); // 设置面板高度与根布局相同
+        if (currentFun == null) return;
+        currentFun.adaptiveWidthHeight(pane);
     }
 
     /**
