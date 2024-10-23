@@ -7,7 +7,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.stage.DirectoryChooser;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
@@ -17,9 +16,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.xiaoxve.DevToolsApplication;
 import org.xiaoxve.itfc.Fun;
 
-import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -27,15 +24,15 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 
 public class SSLFun implements Fun {
-    private GridPane node; // 使用GridPane进行布局
-    private TextField commonNameField;
-    private TextField timeField;
-    private TextField savePathField;
-    private CheckBox encryptCheckBox;
-    private PasswordField passwordField;
-    private Button generateCertButton;
-    private Button convertFormatButton;
-    private TextArea outputArea;
+    private final GridPane node; // 使用GridPane进行布局
+    private final TextField commonNameField;
+    private final TextField timeField;
+    private final TextField savePathField;
+    private final CheckBox encryptCheckBox;
+    private final PasswordField passwordField;
+    private final Button generateCertButton;
+    private final Button convertFormatButton;
+    private final TextArea outputArea;
 
     public SSLFun() {
         node = new GridPane();
@@ -49,12 +46,8 @@ public class SSLFun implements Fun {
         savePathField = createStyledTextField("请选择保存路径");
         savePathField.setEditable(false);
         savePathField.setOnMouseClicked(event -> {
-            DirectoryChooser directoryChooser = new DirectoryChooser();
-            directoryChooser.setTitle("选择目录");
-            File file = directoryChooser.showDialog(DevToolsApplication.getMainStage());
-            if (file != null) {
-                savePathField.setText(file.getAbsolutePath());
-            }
+            String s = DevToolsApplication.showDirectoryChooser();
+            if (s != null) savePathField.setText(s);
         });
 
         encryptCheckBox = new CheckBox("加密证书");
@@ -134,7 +127,7 @@ public class SSLFun implements Fun {
             X500Name subjectName = issuerName;
             BigInteger serial = BigInteger.valueOf(System.currentTimeMillis());
             Date notBefore = new Date();
-            Date notAfter = new Date(System.currentTimeMillis() + validity * 24 * 60 * 60 * 1000);
+            Date notAfter = new Date(System.currentTimeMillis() + (long) validity * 24L * 60L * 60L * 1000L);
 
             X509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
                     issuerName, serial, notBefore, notAfter, subjectName, keyPair.getPublic());

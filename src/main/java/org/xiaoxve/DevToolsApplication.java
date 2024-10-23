@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.HBox;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import lombok.Getter;
 import org.xiaoxve.component.LeftTab;
@@ -12,6 +13,7 @@ import org.xiaoxve.conf.Conf;
 import org.xiaoxve.conf.ConfTab;
 import org.xiaoxve.itfc.Tab;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +48,7 @@ public class DevToolsApplication extends Application {
         root.setId("root"); // 设置 ID
         root.setStyle("-fx-padding: 5px"); // 设置内边距
 
-        setWindowSize(800, 800); // 设置窗口初始大小
+        setWindowSize(1000, 800); // 设置窗口初始大小
 
         // 监听窗口宽度变化
         primaryStage.widthProperty().addListener((observable, oldValue, newValue) -> {
@@ -127,5 +129,15 @@ public class DevToolsApplication extends Application {
         mainStage.setWidth(width); // 设置主窗口宽度
         mainStage.setHeight(height); // 设置主窗口高度
         root.setPrefSize(width, height); // 设置根布局的尺寸
+    }
+    //弹出目录选择器
+    public static String showDirectoryChooser() {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("选择目录");
+        File file = directoryChooser.showDialog(DevToolsApplication.getMainStage());
+        if (file != null) {
+            return file.getAbsolutePath();
+        }
+        return null;
     }
 }

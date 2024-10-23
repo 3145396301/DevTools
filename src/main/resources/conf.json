@@ -59,6 +59,12 @@
       "name": "SSL",
       "icon": "/icon/ssl.png",
       "enabled": true
+    },
+    {
+      "clazz": "org.xiaoxve.fun.project.ProjectToMdTab",
+      "name": "项目MD",
+      "icon": "/icon/project.png",
+      "enabled": true
     }
   ]
 }
