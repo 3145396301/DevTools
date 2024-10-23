@@ -5,10 +5,11 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.util.Duration;
 import org.xiaoxve.DevToolsApplication;
 import org.xiaoxve.itfc.Fun;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,10 +23,14 @@ public class ProjectToMdFun implements Fun {
     Label pathLabel;
     TextField pathTextField;
     VBox suffixEditArea;
+    VBox dirEditArea;
+    VBox mainEditArea;
     TextArea mdTextField;
     HBox hBox;
-    String mode;
+    String suffixMode;
+    String dirMode;
     List<TextField> fileSuffix;
+    List<TextField> dirPath;
 
     public ProjectToMdFun() {
         node = new GridPane();
@@ -35,31 +40,54 @@ public class ProjectToMdFun implements Fun {
         suffixEditArea = new VBox();
         mdTextField = new TextArea();
         fileSuffix = new ArrayList<>();
-        mode = "include";
+        dirPath = new ArrayList<>();
+        suffixMode = "include";
         pathTextField.setEditable(false);
         mdTextField.setEditable(false);
-        node.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
+        node.setBorder(new Border(new BorderStroke(Color.LIGHTGREY, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
         node.setHgap(10);
         node.setVgap(10);
-        Label modeLabel = new Label("模式：");
+
+        // 设置背景颜色
+        node.setStyle("-fx-background-color: #f9f9f9;");
+        pathTextField.setStyle("-fx-border-color: #d3d3d3; -fx-border-radius: 5px;");
+        mdTextField.setStyle("-fx-text-fill: #333; -fx-font-size: 14px; -fx-border-color: #d3d3d3; -fx-border-radius: 5px;");
+        pathTextField.setOnMouseClicked(event -> {
+            String path = DevToolsApplication.showDirectoryChooser();
+            if (path != null) {
+                pathTextField.setText(path);
+            }
+        });
+        // 模式切换按钮
+        Label fileModeLabel = new Label("后缀模式：");
         Button switchButton = new Button("包含");
+        switchButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-border-radius: 5px;");
+
+        // 开始按钮
         Button start = new Button("开始");
+        start.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-border-radius: 5px;");
         start.setOnAction(event -> {
             String mdText = getMdText();
             mdTextField.setText(mdText);
         });
+
+        // 添加按钮
         Button addButton = new Button("+");
+        addButton.setStyle("-fx-background-color: #FF5722; -fx-text-fill: white; -fx-border-radius: 5px;");
         addButton.setOnAction(event -> {
             TextField textField = new TextField();
             suffixEditArea.getChildren().add(textField);
             fileSuffix.add(textField);
         });
-        hBox = new HBox(modeLabel, switchButton, start, addButton);
-        hBox.setSpacing(10);
+        mainEditArea = new VBox();
+        // 包含/排除模式切换
+        hBox = new HBox(fileModeLabel, switchButton, addButton);
+        hBox.setSpacing(20);
         suffixEditArea.getChildren().add(hBox);
+
         switchInclude();
         switchButton.setOnAction(event -> {
-            if (mode.equals("include")) {
+            if ("include".equals(suffixMode)) {
                 switchButton.setText("排除");
                 switchExclude();
             } else {
@@ -67,8 +95,35 @@ public class ProjectToMdFun implements Fun {
                 switchInclude();
             }
         });
-
-        ScrollPane scrollPane = new ScrollPane(suffixEditArea);
+        mainEditArea.getChildren().add(start);
+        mainEditArea.getChildren().add(suffixEditArea);
+        dirEditArea = new VBox();
+        //dir同步
+        Label dirModeLabel = new Label("目录模式：");
+        Button dirSwitchButton = new Button("包含");
+        dirSwitchButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-border-radius: 5px;");
+        dirSwitchButton.setOnAction(event -> {
+            if ("include".equals(dirMode)) {
+                dirSwitchButton.setText("排除");
+                switchDirExclude();
+            } else {
+                dirSwitchButton.setText("包含");
+                switchDirInclude();
+            }
+        });
+        dirEditArea.setSpacing(10);
+        Button addDirButton = new Button("+");
+        addDirButton.setStyle("-fx-background-color: #FF5722; -fx-text-fill: white; -fx-border-radius: 5px;");
+        HBox dirHBox = new HBox(dirModeLabel, dirSwitchButton, addDirButton);
+        dirEditArea.getChildren().add(dirHBox);
+        addDirButton.setOnAction(event -> {
+            TextField textField = new TextField();
+            dirEditArea.getChildren().add(textField);
+            dirPath.add(textField);
+        });
+        switchDirInclude();
+        mainEditArea.getChildren().add(dirEditArea);
+        ScrollPane scrollPane = new ScrollPane(mainEditArea);
         scrollPane.setFitToWidth(true);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
@@ -78,7 +133,7 @@ public class ProjectToMdFun implements Fun {
         node.add(pathTextField, 1, 0);
         node.add(mdTextField, 1, 1);
 
-        // 新增的组件
+        // 文件保存部分
         Label fileNameLabel = new Label("文件名称：");
         TextField fileNameTextField = new TextField();
         fileNameTextField.setPromptText("输入文件名");
@@ -94,6 +149,7 @@ public class ProjectToMdFun implements Fun {
         });
 
         Button saveButton = new Button("保存为文件");
+        saveButton.setStyle("-fx-background-color: #607D8B; -fx-text-fill: white; -fx-border-radius: 5px;");
         saveButton.setOnAction(event -> {
             String fileName = fileNameTextField.getText();
             String filePath = filePathTextField.getText();
@@ -105,7 +161,7 @@ public class ProjectToMdFun implements Fun {
             Path outputPath = Paths.get(filePath, fileName.endsWith(".md") ? fileName : fileName + ".md");
             try {
                 Files.writeString(outputPath, mdTextField.getText());
-                Alert alert = new Alert(Alert.AlertType.INFORMATION, "文件保存成功：" + outputPath.toString());
+                Alert alert = new Alert(Alert.AlertType.INFORMATION, "文件保存成功：" + outputPath);
                 alert.showAndWait();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -121,7 +177,7 @@ public class ProjectToMdFun implements Fun {
         node.add(filePathTextField, 1, 3);
         node.add(saveButton, 1, 4);
 
-        node.setPadding(new Insets(0, 10, 10, 10));
+        node.setPadding(new Insets(20));
         GridPane.setHgrow(mdTextField, Priority.ALWAYS);
         GridPane.setVgrow(mdTextField, Priority.ALWAYS);
 
@@ -137,15 +193,10 @@ public class ProjectToMdFun implements Fun {
             node.getRowConstraints().add(rowConstraints);
         }
 
-        pathTextField.setOnMouseClicked(event -> {
-            int clickCount = event.getClickCount();
-            if (clickCount >= 2) {
-                String path = DevToolsApplication.showDirectoryChooser();
-                if (path != null) {
-                    pathTextField.setText(path);
-                }
-            }
-        });
+        // 设置提示信息
+        Tooltip tooltip = new Tooltip("双击选择文件路径");
+        tooltip.setShowDelay(Duration.seconds(1));
+        pathTextField.setTooltip(tooltip);
     }
 
     @Override
@@ -163,8 +214,8 @@ public class ProjectToMdFun implements Fun {
         mdTextField.setPrefHeight(Double.MAX_VALUE);
     }
 
-    public void switchInclude() {
-        mode = "include";
+    private void switchInclude() {
+        suffixMode = "include";
         suffixEditArea.getChildren().removeAll(fileSuffix);
         fileSuffix.clear();
         List<String> includeSuffix = List.of("java", "xml", "properties", "yaml", "yml");
@@ -175,11 +226,11 @@ public class ProjectToMdFun implements Fun {
         }
     }
 
-    public void switchExclude() {
-        mode = "exclude";
+    private void switchExclude() {
+        suffixMode = "exclude";
         suffixEditArea.getChildren().removeAll(fileSuffix);
         fileSuffix.clear();
-        List<String> excludeSuffix = List.of("png", "jpg", "jpeg", "gif", "bmp", "svg", "mp3", "wav", "mp4", "avi", "LICENSE", "class", "dir:target");
+        List<String> excludeSuffix = List.of("png", "jpg", "jpeg", "gif", "bmp", "svg", "mp3", "wav", "mp4", "avi", "LICENSE", "class");
         for (String suffix : excludeSuffix) {
             TextField textField = new TextField(suffix);
             suffixEditArea.getChildren().add(textField);
@@ -187,48 +238,133 @@ public class ProjectToMdFun implements Fun {
         }
     }
 
-    public String getMdText() {
-        String absoluteDirectory = pathTextField.getText();
-        Path basePath = Paths.get(absoluteDirectory);
-        List<String> markdownLines = new ArrayList<>();
-        List<String> fileSuffixList = fileSuffix.stream().map(TextField::getText).collect(Collectors.toList());
-        List<String> dirList = new ArrayList<>();
 
-        for (int i = 0; i < fileSuffixList.size(); i++) {
-            String suffix = fileSuffixList.get(i);
-            if (suffix.startsWith("dir:")) {
-                dirList.add(suffix.substring(4));
-                fileSuffixList.remove(i);
-                i--;
+    private void switchDirExclude(){
+        dirMode = "exclude";
+        dirEditArea.getChildren().removeAll(dirPath);
+        dirPath.clear();
+        List<String> excludeDir = List.of("/target", "/dist","/node_modules");
+        for (String dir : excludeDir) {
+            TextField textField = new TextField(dir);
+            dirEditArea.getChildren().add(textField);
+            dirPath.add(textField);
+        }
+    }
+    private void switchDirInclude(){
+        dirMode = "include";
+        dirEditArea.getChildren().removeAll(dirPath);
+        dirPath.clear();
+        List<String> includeDir = List.of("/src");
+        for (String dir : includeDir) {
+            TextField textField = new TextField(dir);
+            dirEditArea.getChildren().add(textField);
+            dirPath.add(textField);
+        }
+    }
+
+    private String getMdText() {
+        String absoluteDirectory = pathTextField.getText();
+        File file = new File(absoluteDirectory);
+        file = new File(file.getAbsolutePath());
+        StringBuilder md = new StringBuilder();
+        List<String> fileSuffixList = fileSuffix.stream().map(TextField::getText).collect(Collectors.toList());
+        List<String> dirList = dirPath.stream().map(TextField::getText).collect(Collectors.toList());
+        for (File listFile : file.listFiles()) {
+            try {
+                recursiveCollection(file.getAbsolutePath(),listFile,md,dirList,fileSuffixList);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
-
-        try {
-            Files.walk(basePath)
-                    .filter(Files::isRegularFile)
-                    .filter(p -> {
-                        if (mode.equals("include")) {
-                            return fileSuffixList.stream().anyMatch(suffix -> p.toString().endsWith(suffix));
-                        } else {
-                            boolean dirB = dirList.stream().anyMatch(dir -> p.toString().contains(dir));
-                            boolean suffixB = fileSuffixList.stream().noneMatch(suffix -> p.toString().endsWith(suffix));
-                            return dirB && suffixB;
-                        }
-                    })
-                    .sorted(Comparator.comparingInt(p -> p.getNameCount()))
-                    .forEach(path -> {
-                        String relativePath = basePath.relativize(path).toString().replace("\\", "/");
-                        markdownLines.add("### " + path.getFileName());
-                        markdownLines.add("路径：" + relativePath);
-                        try {
-                            markdownLines.add("```\n" + new String(Files.readAllBytes(path)) + "\n```\n");
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return String.join("\n", markdownLines);
+        return md.toString();
     }
+    private void recursiveCollection(String root,File file,StringBuilder md,List<String> dirList,List<String> fileSuffixList) throws IOException {
+        if (file.isDirectory()) {
+            if (dirList.size()>0){
+                if (dirMode.equals("include")) {
+                    String relativePath = file.getAbsolutePath().replace(root, "");
+                    if (dirList.stream().anyMatch(relativePath::contains)||dirList.stream().anyMatch(dir -> relativePath.replaceAll("\\\\","/").contains(dir))||dirList.stream().anyMatch(dir -> relativePath.replaceAll("/","\\").contains(dir))) {
+                        for (File listFile : file.listFiles()) {
+                            recursiveCollection(root,listFile,md,dirList,fileSuffixList);
+                        }
+                    }
+                }else{
+                    String relativePath = file.getAbsolutePath().replace(root, "");
+                    if (dirList.stream().noneMatch(dir -> relativePath.contains(dir))) {
+                        for (File listFile : file.listFiles()) {
+                            recursiveCollection(root,listFile,md,dirList,fileSuffixList);
+                        }
+                    }
+                }
+            }else{
+                for (File listFile : file.listFiles()) {
+                    recursiveCollection(root,listFile,md,dirList,fileSuffixList);
+                }
+            }
+        }else {
+            String relativePath = file.getAbsolutePath().replace(root, "");
+            if (fileSuffixList.size()>0){
+                if (suffixMode.equals("include")){
+                    if (fileSuffixList.stream().anyMatch(suffix -> relativePath.endsWith(suffix))) {
+                        addToMd(file, md, relativePath);
+                    }
+                }else{
+                    if (fileSuffixList.stream().noneMatch(suffix -> relativePath.endsWith(suffix))) {
+                        addToMd(file, md, relativePath);
+                    }
+                }
+            }else{
+                addToMd(file, md, relativePath);
+            }
+        }
+    }
+
+    private void addToMd(File file, StringBuilder md, String relativePath) throws IOException {
+        md.append("### ").append(relativePath).append("\n").append(file.getName()).append("\n");
+        md.append("```").append("\n");
+        md.append(new String(new BufferedInputStream(new FileInputStream(file)).readAllBytes())).append("\n");
+        md.append("\n").append("```").append("\n");
+    }
+
+//    String absoluteDirectory = pathTextField.getText();
+//    Path basePath = Paths.get(absoluteDirectory);
+//    List<String> markdownLines = new ArrayList<>();
+//    List<String> fileSuffixList = fileSuffix.stream().map(TextField::getText).collect(Collectors.toList());
+//    List<String> dirList = new ArrayList<>();
+//
+//        for (int i = 0; i < fileSuffixList.size(); i++) {
+//        String suffix = fileSuffixList.get(i);
+//        if (suffix.startsWith("dir:")) {
+//            dirList.add(suffix.substring(4));
+//            fileSuffixList.remove(i);
+//            i--;
+//        }
+//    }
+//        try {
+//        Files.walk(basePath)
+//                .filter(Files::isRegularFile)
+//                .filter(p -> {
+//                    if ("include".equals(suffixMode)) {
+//                        return fileSuffixList.stream().anyMatch(suffix -> p.toString().endsWith(suffix));
+//                    } else {
+//                        boolean dirB = dirList.stream().anyMatch(dir -> p.toString().contains(dir));
+//                        boolean suffixB = fileSuffixList.stream().noneMatch(suffix -> p.toString().endsWith(suffix));
+//                        return dirB && suffixB;
+//                    }
+//                })
+//                .sorted(Comparator.comparingInt(p -> p.getNameCount()))
+//                .forEach(path -> {
+//                    String relativePath = basePath.relativize(path).toString().replace("\\", "/");
+//                    markdownLines.add("### " + path.getFileName());
+//                    markdownLines.add("路径：" + relativePath);
+//                    try {
+//                        markdownLines.add("```\n" + new String(Files.readAllBytes(path)) + "\n```\n");
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                });
+//    } catch (IOException e) {
+//        e.printStackTrace();
+//    }
+//        return String.join("\n", markdownLines);
 }

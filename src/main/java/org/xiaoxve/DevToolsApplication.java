@@ -48,7 +48,7 @@ public class DevToolsApplication extends Application {
         root.setId("root"); // 设置 ID
         root.setStyle("-fx-padding: 5px"); // 设置内边距
 
-        setWindowSize(1000, 800); // 设置窗口初始大小
+        setWindowSize(1200, 800); // 设置窗口初始大小
 
         // 监听窗口宽度变化
         primaryStage.widthProperty().addListener((observable, oldValue, newValue) -> {
